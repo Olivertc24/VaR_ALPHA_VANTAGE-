@@ -43,3 +43,5 @@ El dashboard permite a los usuarios analizar cualquier ticker válido de Yahoo F
   <img src="https://img.shields.io/badge/Prophet-0068FF?style=for-the-badge&logo=meta&logoColor=white" alt="Prophet" />
   <img src="https://img.shields.io/badge/SciPy-88C149?style=for-the-badge&logo=scipy&logoColor=white" alt="SciPy" />
 </p>
+
+###### Dashboard con streamlit: https://yfinance-proyeccion-proy.onrender.com
