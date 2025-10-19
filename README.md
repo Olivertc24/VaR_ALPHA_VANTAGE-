@@ -2,10 +2,6 @@
 
 Este proyecto es un dashboard web interactivo para el análisis técnico, estadístico y de pronóstico de series de tiempo financieras. La aplicación está construida enteramente en Python, utilizando Streamlit para la interfaz, Plotly para las visualizaciones y Prophet para las proyecciones de machine learning.
 
-Este repositorio es parte de mi portafolio profesional como Científico de Datos y Actuario.
-[¡IMPORTANTE! Reemplaza esta línea con una captura de pantalla o un GIF de tu dashboard en acción. Esta es la parte más importante para tu portafolio.]
-![Demo del Dashboard](URL_DEL_GIF_O_SCREENSHOT.png)
-
 # 🚀 Características Principales
 
 El dashboard permite a los usuarios analizar cualquier ticker válido de Yahoo Finance y ofrece:
