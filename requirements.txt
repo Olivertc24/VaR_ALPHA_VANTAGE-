@@ -4,3 +4,5 @@ streamlit
 plotly Examentensions
 yfinance
 scipy
+prophet
+statsmodels

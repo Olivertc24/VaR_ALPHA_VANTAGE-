@@ -1,7 +1,15 @@
 # core/analysis.py
 import pandas as pd
 import numpy as np
-from scipy.signal import find_peaks # Para el análisis de niveles
+from scipy.signal import find_peaks
+
+# --- IMPORTACIONES ---
+from statsmodels.tsa.seasonal import seasonal_decompose
+from prophet import Prophet
+from prophet.plot import plot_plotly
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+# --- FIN IMPORTACIONES ---
 
 def add_moving_averages(df, short_window=20, long_window=50):
     """Añade medias móviles simples (SMA)."""
@@ -19,7 +27,6 @@ def add_bollinger_bands(df, window=20):
 
 def get_descriptive_stats(returns_series):
     """Genera un reporte estadístico avanzado."""
-    # Aseguramos 252 días de trading para anualizar
     anual_factor = np.sqrt(252)
     
     stats = {
@@ -31,20 +38,14 @@ def get_descriptive_stats(returns_series):
         "Kurtosis (Curtosis)": returns_series.kurtosis(),
         "Sharpe Ratio (Anualizado)": (returns_series.mean() / returns_series.std()) * anual_factor
     }
-    # Formatear números para mejor lectura
     stats_formatted = {key: f"{value:.6f}" for key, value in stats.items()}
     return stats_formatted
 
 def find_support_resistance(df, prominence=1):
-    """
-    Encuentra niveles de soporte y resistencia usando picos y valles.
-    Este es el "Análisis de Nivel".
-    """
-    # Usamos 'low' para soporte y 'high' para resistencia
+    """Encuentra niveles de soporte y resistencia usando picos y valles."""
     lows = df['low']
     highs = df['high']
     
-    # find_peaks necesita valores negativos para encontrar valles (mínimos)
     support_indices, _ = find_peaks(-lows, prominence=prominence)
     resistance_indices, _ = find_peaks(highs, prominence=prominence)
     
@@ -52,3 +53,59 @@ def find_support_resistance(df, prominence=1):
     resistance_levels = highs.iloc[resistance_indices]
     
     return support_levels, resistance_levels
+
+
+# --- FUNCIONES DE ANÁLISIS DE SERIES Y PROYECCIÓN ---
+
+def get_series_decomposition(df_series):
+    """
+    Analiza y grafica la descomposición de la serie de tiempo (Tendencia, Estacionalidad, Residual).
+    """
+    # Usamos 'adjusted close' y rellenamos fines de semana para un análisis de estacionalidad
+    series = df_series['adjusted close'].resample('D').median().fillna(method='ffill')
+    
+    # Se asume estacionalidad anual (365 días).
+    # Prophet necesita al menos 2 ciclos (730 días) para capturarla bien.
+    periodo = 365 if len(series) > 730 else 30 # Usamos mensual si no hay datos
+    
+    decomposition = seasonal_decompose(series, model='additive', period=periodo)
+
+    fig = make_subplots(rows=4, cols=1,
+                        subplot_titles=('Observado', 'Tendencia', 'Estacionalidad', 'Residual'))
+    
+    fig.add_trace(go.Scatter(x=decomposition.observed.index, y=decomposition.observed, mode='lines', name='Observado'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=decomposition.trend.index, y=decomposition.trend, mode='lines', name='Tendencia'), row=2, col=1)
+    fig.add_trace(go.Scatter(x=decomposition.seasonal.index, y=decomposition.seasonal, mode='lines', name='Estacionalidad'), row=3, col=1)
+    fig.add_trace(go.Scatter(x=decomposition.resid.index, y=decomposition.resid, mode='markers', name='Residual'), row=4, col=1)
+    
+    fig.update_layout(height=700, title_text="Descomposición de la Serie de Tiempo", showlegend=False)
+    return fig
+
+
+def run_prophet_forecast(df, periods=30):
+    """
+    Entrena un modelo Prophet y devuelve un gráfico de Plotly con la proyección.
+    """
+    # --- INICIO DE LA CORRECCIÓN ---
+    # El índice de yfinance se llama 'Date'. Lo convertimos a 'ds'.
+    df_prophet = df.reset_index().rename(columns={'Date': 'ds', 'adjusted close': 'y'})
+    # --- FIN DE LA CORRECCIÓN ---
+    
+    # Instanciar y entrenar el modelo
+    model = Prophet(daily_seasonality=False, 
+                    weekly_seasonality=True, 
+                    yearly_seasonality=True,
+                    changepoint_prior_scale=0.05)
+    
+    model.fit(df_prophet)
+
+    # Crear dataframe futuro y predecir
+    future = model.make_future_dataframe(periods=periods)
+    forecast = model.predict(future)
+
+    # Generar el gráfico de Plotly
+    fig = plot_plotly(model, forecast)
+    fig.update_layout(title=f'Proyección a {periods} días con Prophet',
+                      xaxis_title='Fecha', yaxis_title='Precio (Proyectado)')
+    return fig
+# --- FIN DE FUNCIONES DE ANÁLISIS DE SERIES Y PROYECCIÓN ---
