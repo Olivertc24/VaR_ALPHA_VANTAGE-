@@ -16,7 +16,7 @@ if project_root not in sys.path:
 # --- FIN DE LA SOLUCIÓN ---
 
 
-# --- Importaciones de nuestros módulos (ACTUALIZADAS) ---
+# --- Importaciones de nuestros módulos ---
 from core.api_client import get_daily_data
 from core.data_processing import calculate_returns
 from core.analysis import (
@@ -24,13 +24,13 @@ from core.analysis import (
     add_bollinger_bands, 
     get_descriptive_stats,
     find_support_resistance,
-    get_series_decomposition, # <--- NUEVA
-    run_prophet_forecast    # <--- NUEVA
+    get_series_decomposition,
+    run_prophet_forecast
 )
 
 # --- Configuración de la página de Streamlit ---
 st.set_page_config(layout="wide", page_title="Dashboard Financiero")
-st.title("Dashboard de Análisis Financiero Avanzado")
+st.title("Dashboard de Análisis Financiero")
 
 
 # --- Barra lateral de controles ---
@@ -41,30 +41,35 @@ show_ma = st.sidebar.checkbox("Mostrar Medias Móviles (SMA 20/50)", value=True)
 show_bb = st.sidebar.checkbox("Mostrar Bandas de Bollinger (BB 20)", value=True)
 show_levels = st.sidebar.checkbox("Mostrar Soportes y Resistencias", value=True)
 level_prominence = st.sidebar.slider("Prominencia de Niveles", min_value=1, max_value=20, value=5,
-                                     help="Ajusta la sensibilidad para detectar picos y valles. "
-                                          "Un valor más alto detecta niveles más significativos.")
+                                     help="Ajusta la sensibilidad para detectar picos y valles.")
 
 # --- FILTRO DE FECHAS ---
 st.sidebar.subheader("Filtro de Fechas")
 min_date_default = datetime.now().date()
 max_date_default = datetime.now().date()
 
-# --- NUEVOS CONTROLES DE PROYECCIÓN ---
+# --- CONTROLES DE PROYECCIÓN (CON MEJORAS) ---
 st.sidebar.subheader("Proyecciones (con Prophet)")
 show_forecast = st.sidebar.checkbox("Mostrar Proyección y Descomposición", value=False)
-forecast_days = st.sidebar.number_input("Días a Proyectar", min_value=7, max_value=365, value=30,
-                                        help="Número de días hacia el futuro para la proyección.")
-# --- FIN NUEVOS CONTROLES ---
+forecast_days = st.sidebar.number_input("Días a Proyectar", min_value=7, max_value=365, value=30)
+
+changepoint_scale = st.sidebar.slider(
+    "Sensibilidad de Tendencia (Changepoint)", 
+    min_value=0.01, 
+    max_value=1.0, 
+    value=0.05, 
+    step=0.01,
+    help="Valores altos (ej. 0.5) hacen la tendencia más flexible; "
+         "valores bajos (ej. 0.05) la hacen más rígida."
+)
 
 
 # --- Carga y Procesamiento de Datos ---
-@st.cache_data(ttl=3600) # Cache por 1 hora
+@st.cache_data(ttl=3600)
 def load_data(ticker):
-    """Carga y procesa los datos desde la API."""
     data = get_daily_data(ticker)
     if data.empty:
         return pd.DataFrame(), pd.DataFrame() 
-    
     data_processed = calculate_returns(data)
     return data, data_processed
 
@@ -78,7 +83,6 @@ if not data_raw.empty:
     max_date_default = data_raw.index.max().date()
 if not data_returns.empty:
     data_returns.index = data_returns.index.tz_localize(None)
-# --- Fin Corrección ---
 
 
 # --- Renderizado del Dashboard ---
@@ -100,21 +104,25 @@ else:
 
     data_raw_filtered = data_raw.loc[start_date:end_date]
     data_returns_filtered = data_returns.loc[start_date:end_date]
-    # --- FIN FILTRO DE FECHAS ---
+    
 
-
+    # --- INICIO DE LA CORRECCIÓN (BLOQUE REINSERTADO) ---
     # Aplicamos los análisis seleccionados al dataframe FILTRADO
+    # Esta variable 'data_plot' es la que faltaba
     data_plot = data_raw_filtered.copy()
     if show_ma:
         data_plot = add_moving_averages(data_plot)
     if show_bb:
         data_plot = add_bollinger_bands(data_plot)
-    
-    
+    # --- FIN DE LA CORRECCIÓN ---
+
+
     # --- 1. Sección de Gráficos ---
     st.header(f"Análisis Técnico: {symbol} ({start_date} a {end_date})")
     
     fig = go.Figure()
+    
+    # Esta línea (la 118) ahora funcionará
     fig.add_trace(go.Candlestick(x=data_plot.index,
                     open=data_plot['open'], high=data_plot['high'],
                     low=data_plot['low'], close=data_plot['adjusted close'],
@@ -151,7 +159,7 @@ else:
         st.subheader("Distribución de Rendimientos")
         fig_hist = go.Figure()
         fig_hist.add_trace(go.Histogram(x=data_returns_filtered['log_return'], nbinsx=100, name='Frecuencia', marker_color='blue'))
-        fig_hist.update_layout(title="Histograma de Rendimientos LogarítmSicos", xaxis_title="Rendimiento Log", yaxis_title="Frecuencia", showlegend=False)
+        fig_hist.update_layout(title="Histograma de Rendimientos Logarítmicos", xaxis_title="Rendimiento Log", yaxis_title="Frecuencia", showlegend=False)
         st.plotly_chart(fig_hist, use_container_width=True)
 
     
@@ -160,11 +168,10 @@ else:
     st.dataframe(data_returns_filtered.tail(10))
     
 
-    # --- 4. SECCIÓN DE PROYECCIÓN (NUEVA) ---
+    # --- 4. SECCIÓN DE PROYECCIÓN (CON MEJORAS) ---
     if show_forecast:
         st.header(f"Análisis de Proyección para {symbol}")
         
-        # Advertencia si no hay suficientes datos para Prophet
         if len(data_raw_filtered) < 730:
             st.warning("Advertencia: Se recomiendan al menos 2 años de datos en el rango seleccionado "
                        "para una descomposición y proyección anual precisas. "
@@ -176,6 +183,17 @@ else:
             st.plotly_chart(decomp_fig, use_container_width=True)
 
         # 4.2 Proyección con Prophet
-        with st.spinner(f"Calculando proyección a {forecast_days} días con Prophet... (Esto puede tardar unos segundos)"):
-            forecast_fig = run_prophet_forecast(data_raw_filtered, periods=forecast_days)
+        with st.spinner(f"Calculando proyección a {forecast_days} días con Prophet... (Esto puede tardar)"):
+            
+            # Llamamos a la función actualizada
+            forecast_fig, components_fig = run_prophet_forecast(
+                data_raw_filtered, 
+                periods=forecast_days,
+                changepoint_scale=changepoint_scale
+            )
+            
+            st.subheader(f"Proyección a {forecast_days} Días")
             st.plotly_chart(forecast_fig, use_container_width=True)
+            
+            st.subheader("Componentes del Modelo (Tendencia y Estacionalidad)")
+            st.plotly_chart(components_fig, use_container_width=True)

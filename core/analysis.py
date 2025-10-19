@@ -6,10 +6,13 @@ from scipy.signal import find_peaks
 # --- IMPORTACIONES ---
 from statsmodels.tsa.seasonal import seasonal_decompose
 from prophet import Prophet
-from prophet.plot import plot_plotly
+from prophet.plot import plot_plotly, plot_components_plotly # <--- MODIFICADO
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 # --- FIN IMPORTACIONES ---
+
+# ... (El resto de tus funciones: add_moving_averages, get_descriptive_stats, etc. quedan igual) ...
+# ... (Asegúrate de copiar también las funciones add_bollinger_bands y find_support_resistance) ...
 
 def add_moving_averages(df, short_window=20, long_window=50):
     """Añade medias móviles simples (SMA)."""
@@ -55,18 +58,14 @@ def find_support_resistance(df, prominence=1):
     return support_levels, resistance_levels
 
 
-# --- FUNCIONES DE ANÁLISIS DE SERIES Y PROYECCIÓN ---
+# --- FUNCIONES DE ANÁLISIS DE SERIES Y PROYECCIÓN (ACTUALIZADAS) ---
 
 def get_series_decomposition(df_series):
     """
     Analiza y grafica la descomposición de la serie de tiempo (Tendencia, Estacionalidad, Residual).
     """
-    # Usamos 'adjusted close' y rellenamos fines de semana para un análisis de estacionalidad
     series = df_series['adjusted close'].resample('D').median().fillna(method='ffill')
-    
-    # Se asume estacionalidad anual (365 días).
-    # Prophet necesita al menos 2 ciclos (730 días) para capturarla bien.
-    periodo = 365 if len(series) > 730 else 30 # Usamos mensual si no hay datos
+    periodo = 365 if len(series) > 730 else 30
     
     decomposition = seasonal_decompose(series, model='additive', period=periodo)
 
@@ -82,20 +81,23 @@ def get_series_decomposition(df_series):
     return fig
 
 
-def run_prophet_forecast(df, periods=30):
+def run_prophet_forecast(df, periods=30, changepoint_scale=0.05): # <--- NUEVO ARGUMENTO
     """
-    Entrena un modelo Prophet y devuelve un gráfico de Plotly con la proyección.
+    Entrena un modelo Prophet y devuelve dos gráficos de Plotly:
+    1. La proyección.
+    2. Los componentes del modelo.
     """
-    # --- INICIO DE LA CORRECCIÓN ---
     # El índice de yfinance se llama 'Date'. Lo convertimos a 'ds'.
     df_prophet = df.reset_index().rename(columns={'Date': 'ds', 'adjusted close': 'y'})
-    # --- FIN DE LA CORRECCIÓN ---
     
     # Instanciar y entrenar el modelo
     model = Prophet(daily_seasonality=False, 
                     weekly_seasonality=True, 
                     yearly_seasonality=True,
-                    changepoint_prior_scale=0.05)
+                    changepoint_prior_scale=changepoint_scale) # <--- APLICAMOS EL ARGUMENTO
+    
+    # --- MEJORA: AÑADIR FERIADOS ---
+    model.add_country_holidays(country_name='US')
     
     model.fit(df_prophet)
 
@@ -103,9 +105,13 @@ def run_prophet_forecast(df, periods=30):
     future = model.make_future_dataframe(periods=periods)
     forecast = model.predict(future)
 
-    # Generar el gráfico de Plotly
-    fig = plot_plotly(model, forecast)
-    fig.update_layout(title=f'Proyección a {periods} días con Prophet',
-                      xaxis_title='Fecha', yaxis_title='Precio (Proyectado)')
-    return fig
-# --- FIN DE FUNCIONES DE ANÁLISIS DE SERIES Y PROYECCIÓN ---
+    # Generar el gráfico de Proyección
+    fig_forecast = plot_plotly(model, forecast)
+    fig_forecast.update_layout(title=f'Proyección a {periods} días con Prophet',
+                               xaxis_title='Fecha', yaxis_title='Precio (Proyectado)')
+    
+    # --- MEJORA: GENERAR GRÁFICO DE COMPONENTES ---
+    fig_components = plot_components_plotly(model, forecast)
+    fig_components.update_layout(title='Componentes del Modelo Prophet')
+
+    return fig_forecast, fig_components
