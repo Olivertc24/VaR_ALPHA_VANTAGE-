@@ -36,11 +36,14 @@ El dashboard permite a los usuarios analizar cualquier ticker válido de Yahoo F
 
 # 🛠️ Stack Tecnológico
 
-• Lenguaje: Python
-• Dashboard: Streamlit
-• Extracción de Datos: yfinance
-• Manipulación de Datos: pandas y numpy
-• Visualización: plotly
-• Análisis Estadístico: statsmodels
-• Modelo de Proyección: prophet
-• Análisis de Picos: scipy
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit" />
+  <img src="https://img.shields.io/badge/yfinance-008080?style=for-the-badge" alt="yfinance" />
+  <img src="https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="pandas" />
+  <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy" />
+  <img src="https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white" alt="Plotly" />
+  <img src="https://img.shields.io/badge/statsmodels-D62728?style=for-the-badge" alt="statsmodels" />
+  <img src="https://img.shields.io/badge/Prophet-0068FF?style=for-the-badge&logo=meta&logoColor=white" alt="Prophet" />
+  <img src="https://img.shields.io/badge/SciPy-88C149?style=for-the-badge&logo=scipy&logoColor=white" alt="SciPy" />
+</p>
