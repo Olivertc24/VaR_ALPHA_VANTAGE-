@@ -16,13 +16,13 @@ El dashboard permite a los usuarios analizar cualquier ticker válido de Yahoo F
 
 • Análisis Estadístico: Cálculo de métricas clave sobre los rendimientos logarítmicos, incluyendo:
 
-  • Volatilidad Anualizada
+    • Volatilidad Anualizada
 
-  • Sharpe Ratio (Anualizado)
+    • Sharpe Ratio (Anualizado)
 
-  • Asimetría (Skewness)
+    • Asimetría (Skewness)
 
-  • Curtosis (Kurtosis)
+    • Curtosis (Kurtosis)
 
 • Análisis de Serie de Tiempo: Descomposición de la serie de precios en sus componentes de Tendencia, Estacionalidad y Residuales (usando statsmodels).
 
