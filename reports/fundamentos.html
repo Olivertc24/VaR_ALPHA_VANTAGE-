@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundamentos Teóricos: Dashboard Financiero</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 25px 40px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #000;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h2 {
+            color: #0d6efd;
+            margin-top: 40px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #343a40;
+            margin-top: 25px;
+        }
+        p, li {
+            font-size: 1.05em;
+        }
+        .theory {
+            background-color: #e9ecef;
+            border-left: 5px solid #0d6efd;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .analysis {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .analysis b {
+            color: #664d03;
+        }
+        code {
+            background-color: #e8e8e8;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fundamentos Teóricos del Dashboard de Análisis Financiero</h1>
+        <p class="footer">Autor: Oliver | Fecha: 19 de octubre de 2025</p>
+        <p>Este documento desglosa los fundamentos conceptuales y estadísticos implementados en el dashboard. Cada concepto se explica teóricamente y luego se aplica utilizando un análisis real de las acciones de <strong>Apple Inc. (AAPL)</strong>.</p>
+
+        <h2>1. Obtención y Procesamiento de Datos</h2>
+        
+        <h3>Rendimientos Logarítmicos (Log Returns)</h3>
+        <p class="theory">
+            <b>¿Qué son?</b> En lugar de analizar los precios directamente, analizamos sus rendimientos. El rendimiento simple es <code>(P_t / P_{t-1}) - 1</code>. El rendimiento logarítmico es <code>ln(P_t / P_{t-1})</code>.
+            <br><br>
+            <b>¿Por qué los usamos?</b> Los "log returns" tienen dos ventajas cruciales:
+            <ol>
+                <li><b>Normalidad:</b> Se aproximan mucho más a una distribución normal que los precios o los retornos simples, lo cual es fundamental para muchos modelos estadísticos.</li>
+                <li><b>Aditividad Temporal:</b> El rendimiento logarítmico total durante 'n' días es simplemente la <i>suma</i> de los rendimientos logarítmicos diarios. Esto no ocurre con los retornos simples.</li>
+            </ol>
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> Al calcular las estadísticas descriptivas de AAPL, no usamos los precios, sino los rendimientos logarítmicos. Esto nos permitió generar el histograma y métricas como la Kurtosis. Si hubiéramos usado los precios, el histograma no tendría sentido, ya que los precios siguen una "caminata aleatoria" (random walk) y no están estacionarios.
+        </p>
+
+        <h2>2. Análisis Técnico: Indicadores y Niveles</h2>
+
+        <h3>Gráficos de Velas (Candlesticks)</h3>
+        <p class="theory">
+            <b>¿Qué son?</b> Son el estándar de la industria para visualizar la acción del precio en un período. Cada "vela" muestra cuatro puntos de datos:
+            <ul>
+                <li><b>Apertura (Open):</b> Precio al inicio del período.</li>
+                <li><b>Cierre (Close):</b> Precio al final del período.</li>
+                <li><b>Máximo (High):</b> El precio más alto alcanzado.</li>
+                <li><b>Mínimo (Low):</b> El precio más bajo alcanzado.</li>
+            </ul>
+            El "cuerpo" de la vela (la parte gruesa) muestra el rango entre la apertura y el cierre. Las "mechas" (líneas delgadas) muestran los extremos (máximo y mínimo).
+        </p>
+
+        <h3>Medias Móviles Simples (SMA)</h3>
+        <p class="theory">
+            <b>¿Qué son?</b> Una SMA calcula el precio medio de un activo durante un número 'n' de períodos. Por ejemplo, la SMA 20 es la media de los últimos 20 precios de cierre.
+            <br><br>
+            <b>¿Por qué las usamos?</b> Suavizan el "ruido" de la volatilidad diaria y ayudan a identificar la dirección de la tendencia predominante. Un cruce de una media corta (SMA 20) por debajo de una media larga (SMA 50) se conoce como "Cruce de la Muerte" y es una señal bajista.
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> En nuestro análisis de AAPL (Oct 2025), observamos un <b>Cruce de la Muerte</b> en el gráfico diario (SMA 20 cruzando por debajo de la SMA 50), indicando una corrección o cambio de tendencia a corto plazo.
+        </p>
+
+        <h3>Bandas de Bollinger (Bollinger Bands)</h3>
+        <p class="theory">
+            <b>¿Qué son?</b> Son un indicador de volatilidad. Consisten en tres líneas:
+            <ol>
+                <li><b>Banda Media:</b> Una SMA (generalmente de 20 períodos).</li>
+                <li><b>Banda Superior:</b> La SMA 20 + (2 Desviaciones Estándar).</li>
+                <li><b>Banda Inferior:</b> La SMA 20 - (2 Desviaciones Estándar).</li>
+            </ol>
+            Las bandas se "ensanchan" cuando la volatilidad aumenta y se "contraen" cuando disminuye.
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> Observamos que el precio de AAPL estaba tocando la banda inferior. Esto no es una señal de compra por sí sola, pero indica que el activo está <b>relativamente "sobrevendido"</b> en comparación con su media reciente (está a 2 desviaciones estándar por debajo de su media de 20 días).
+        </p>
+
+        <h3>Soportes y Resistencias</h3>
+        <p class="theory">
+            <b>¿Qué son?</b> Son niveles de precio psicológicos donde el interés de compra o venta es lo suficientemente fuerte como para detener o revertir una tendencia.
+            <ul>
+                <li><b>Soporte:</b> Un nivel por debajo del precio actual donde la demanda (compradores) es fuerte.</li>
+                <li><b>Resistencia:</b> Un nivel por encima del precio actual donde la oferta (vendedores) es fuerte.</li>
+            </ul>
+            En el dashboard, los identificamos algorítmicamente usando la función <code>scipy.signal.find_peaks</code> sobre los precios máximos (para resistencias) y mínimos (para soportes).
+        </p>
+
+        <h2>3. Análisis Estadístico (Métricas de Riesgo)</h2>
+        <p>Este análisis se realiza sobre la serie de <b>rendimientos logarítmicos</b>.</p>
+
+        <h3>Volatilidad (Desviación Estándar)</h3>
+        <p class="theory">
+            <b>¿Qué es?</b> Es la desviación estándar de los rendimientos logarítmicos. Mide la magnitud de la variación del precio de un activo. Una volatilidad alta implica mayor riesgo.
+            <br><br>
+            <b>Anualización:</b> Para que sea comparable, la volatilidad diaria se anualiza multiplicándola por la raíz cuadrada del número de días de trading en un año (aprox. 252).
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> AAPL mostró una volatilidad anualizada histórica de aprox. <b>44.21%</b>. Esto nos dice que, en un año cualquiera, es estadísticamente normal que el precio de AAPL termine un 44% por encima o por debajo de su precio inicial.
+        </p>
+
+        <h3>Sharpe Ratio (Ratio de Sharpe)</h3>
+        <p class="theory">
+            <b>¿Qué es?</b> Es la métrica reina para medir el rendimiento ajustado al riesgo. Mide cuánto rendimiento "extra" ha generado una inversión por cada unidad de riesgo (volatilidad) que ha asumido.
+            <br><br>
+            <b>Fórmula:</b> <code>(Rendimiento Medio del Activo - Tasa Libre de Riesgo) / Volatilidad del Activo</code>. Un ratio > 1 se considera bueno.
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> El Sharpe Ratio anualizado de AAPL fue de <b>~0.70</b>. Esto significa que, aunque no supera el umbral de 1, ha proporcionado un rendimiento positivo que compensa adecuadamente el riesgo asumido.
+        </p>
+
+        <h3>Skewness (Asimetría)</h3>
+        <p class="theory">
+            <b>¿Qué es?</b> Mide la asimetría de la distribución de rendimientos.
+            <ul>
+                <li><code>Skew = 0</code>: Perfectamente simétrica (como la campana de Gauss).</li>
+                <li><code>Skew > 0</code>: Asimetría positiva (cola derecha larga). Más ganancias pequeñas y frecuentes, con algunas ganancias extremas.</li>
+                <li><code>Skew < 0</code>: Asimetría negativa (cola izquierda larga). Más ganancias pequeñas y frecuentes, pero con algunas caídas extremas y abruptas (cisnes negros).</li>
+            </ul>
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> AAPL tiene un Skewness de <b>-0.25</b>. Este valor negativo, aunque cercano a cero, confirma lo que muchos inversores sienten: las caídas del mercado (cola izquierda) tienden a ser más abruptas y violentas que las subidas.
+        </p>
+
+        <h3>Kurtosis (Curtosis)</h3>
+        <p class="theory">
+            <b>¿Qué es?</b> Mide el "grosor" de las colas de la distribución. Nos dice cuán probables son los eventos extremos (valores atípicos).
+            <ul>
+                <li><code>Kurtosis = 3</code>: Distribución normal (Mesocúrtica).</li>
+                <li><code>Kurtosis > 3</code>: Colas pesadas (Leptocúrtica). Los eventos extremos son <b>mucho más probables</b> de lo que predice una distribución normal.</li>
+            </ul>
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> La Kurtosis de AAPL fue de <b>~21.65</b>. Este es quizás el hallazgo más importante. Un valor tan alto nos dice que los modelos financieros (como Black-Scholes) que asumen una distribución normal <b>subestimarán masivamente el riesgo</b> de AAPL. Los "cisnes negros" no son tan raros.
+        </p>
+
+        <h2>4. Análisis de Series de Tiempo y Proyección (ML)</h2>
+
+        <h3>Descomposición de Series de Tiempo</h3>
+        <p class="theory">
+            <b>¿Qué es?</b> Es un método estadístico (usamos <code>statsmodels.tsa.seasonal_decompose</code>) que separa una serie de tiempo en sus componentes principales. Generalmente usamos un modelo aditivo: <code>Precio(t) = Tendencia(t) + Estacionalidad(t) + Residual(t)</code>.
+            <ul>
+                <li><b>Tendencia (Trend):</b> La dirección general a largo plazo.</li>
+                <li><b>Estacionalidad (Seasonality):</b> Patrones repetitivos y predecibles (ej. anuales, semanales).</li>
+                <li><b>Residual (Resid):</b> El "ruido" que queda después de quitar los otros dos.</li>
+            </ul>
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> La descomposición de AAPL fue muy clara:
+            <br>
+            <b>1. Tendencia:</b> Una tendencia alcista exponencial a largo plazo.
+            <br>
+            <b>2. Estacionalidad:</b> Un patrón anual muy fuerte, correlacionado con su ciclo de productos. Históricamente, AAPL tiende a tener un rendimiento inferior en verano y un repunte muy fuerte en el Q4 (lanzamiento del iPhone y ventas navideñas).
+            <br>
+            <b>3. Residual:</b> Los residuos nos mostraron los picos de volatilidad (incertidumbre) durante las crisis de 2008 y 2020.
+        </p>
+
+        <h3>Proyección con Prophet (Machine Learning)</h3>
+        <p class="theory">
+            <b>¿Qué es?</b> Es un modelo de pronóstico de series de tiempo desarrollado por Meta (Facebook). Es un modelo aditivo (similar a la descomposición) pero mucho más robusto. Lo elegimos por sus ventajas:
+            <ul>
+                <li><b>Maneja Feriados:</b> Le podemos "enseñar" los días festivos (ej. <code>add_country_holidays('US')</code>) para que no los confunda con caídas del mercado, mejorando la estacionalidad semanal.</li>
+                <li><b>Changepoints (Puntos de Inflexión):</b> Es excelente para detectar automáticamente cuándo la tendencia "se rompe" y cambia de dirección (ej. una crisis).</li>
+                <li><b>Estacionalidad Múltiple:</b> Modela la estacionalidad anual y semanal simultáneamente.</li>
+            </ul>
+            El parámetro clave que ajustamos fue <code>changepoint_prior_scale</code>, que controla la flexibilidad del modelo para adaptarse a los cambios de tendencia.
+        </p>
+        <p class="analysis">
+            <b>Ejemplo (AAPL):</b> Al entrenar a Prophet con los datos de AAPL (incluyendo los feriados de EE.UU.), el modelo aprendió la fuerte tendencia y la estacionalidad de Q4. La proyección a 30 días nos dio un rango de precios probable (ej. $205-$232) y sugirió que la corrección técnica actual podría revertirse gracias a la fuerte estacionalidad positiva que se avecina.
+        </p>
+    </div>
+    <div class="footer">
+        <p>Fin del Informe. Generado como parte del proyecto de portafolio de Oliver.</p>
+    </div>
+</body>
+</html>
